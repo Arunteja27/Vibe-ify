@@ -47,6 +47,7 @@ void PlaybackController::printHelp() const {
   cout << "    speed <25-400>       - Playback speed %" << endl;
   cout << "    effects              - Show active effects" << endl;
   cout << "    clear                - Reset all effects" << endl;
+  cout << "    spectrum             - Show frequency visualizer" << endl;
   cout << endl;
   cout << "  General:" << endl;
   cout << "    help                 - Show this help" << endl;
@@ -155,6 +156,8 @@ void PlaybackController::run() {
       cmdEffects();
     } else if (cmd == "clear") {
       cmdClearEffects();
+    } else if (cmd == "spectrum" || cmd == "fft") {
+      cmdSpectrum();
     } else {
       cout << "  Unknown command: '" << cmd << "'. Type 'help' for commands."
            << endl;
@@ -427,4 +430,41 @@ void PlaybackController::cmdEffects() const {
 void PlaybackController::cmdClearEffects() {
   engine->clearEffects();
   cout << "  All effects cleared." << endl;
+}
+
+void PlaybackController::cmdSpectrum() const {
+  const float *bands = engine->getSpectrumBands();
+  int numBands = engine->getSpectrumNumBands();
+
+  if (!bands || numBands == 0 || !engine->isPlaying()) {
+    cout << "  No spectrum data (play a track first)." << endl;
+    return;
+  }
+
+  // Print ASCII bar visualization (show 32 bands, 12 rows tall)
+  int displayBands = 32;
+  if (displayBands > numBands)
+    displayBands = numBands;
+  int step = numBands / displayBands;
+  int height = 12;
+
+  cout << endl;
+  for (int row = height; row >= 1; --row) {
+    float threshold = (float)row / height;
+    cout << "  ";
+    for (int b = 0; b < displayBands; ++b) {
+      float val = bands[b * step];
+      if (val >= threshold)
+        cout << "██";
+      else
+        cout << "  ";
+    }
+    cout << endl;
+  }
+  cout << "  ";
+  for (int b = 0; b < displayBands; ++b)
+    cout << "──";
+  cout << endl;
+  cout << "  Low ────────────────────────── High" << endl;
+  cout << endl;
 }
