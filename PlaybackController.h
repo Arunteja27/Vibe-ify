@@ -3,7 +3,9 @@
 
 #include "AudioEngine.h"
 #include "Playlist.h"
+#include "StreamCache.h"
 #include "TrackLibrary.h"
+#include "YouTubeSource.h"
 #include <string>
 
 // Terminal CLI for the music engine.
@@ -18,6 +20,12 @@ private:
   TrackLibrary *library;
   AudioEngine *engine;
   Playlist *playlist;
+  YouTubeSource *youtube;
+  StreamCache *cache;
+
+  // Last search results for yt-play by index
+  YouTubeResult lastResults[5];
+  int lastResultCount;
 
   void printBanner() const;
   void printHelp() const;
@@ -43,6 +51,8 @@ private:
   void cmdEffects() const;
   void cmdClearEffects();
   void cmdSpectrum() const;
+  void cmdYtSearch(const std::string &args);
+  void cmdYtPlay(const std::string &args);
 };
 
 #endif
