@@ -1,6 +1,10 @@
+#include "ApiController.h"
 #include "AudioEngine.h"
+#include "HttpServer.h"
 #include "PlaybackController.h"
+#include "StreamCache.h"
 #include "TrackLibrary.h"
+#include "YouTubeSource.h"
 #include <cstdlib>
 #include <direct.h>
 #include <iostream>
@@ -14,17 +18,15 @@ int main() {
 
   _mkdir("media");
   _mkdir("media/samples");
+  _mkdir("media/cache");
 
   TrackLibrary *library = new TrackLibrary();
   int loaded = library->loadFromDirectory("media/samples");
 
-  if (loaded == 0) {
-    cerr << "  Error: No tracks found in media/samples/" << endl;
-    cerr << "  Place .wav files in media/samples/ (format: Artist - Title.wav)"
+  if (loaded == 0)
+    cerr << "  Warning: No tracks in media/samples/ (use yt-search to find "
+            "music)"
          << endl;
-    delete library;
-    return 1;
-  }
 
   AudioEngine *engine = new AudioEngine();
   if (!engine->init(44100, 2, 4096)) {
@@ -34,10 +36,22 @@ int main() {
     return 1;
   }
 
-  PlaybackController *controller = new PlaybackController(library, engine);
-  controller->run();
+  YouTubeSource *youtube = new YouTubeSource();
+  StreamCache *cache = new StreamCache();
 
-  delete controller;
+  ApiController *apiCtrl = new ApiController(library, engine, youtube, cache);
+  HttpServer *httpServer = new HttpServer(8080);
+  httpServer->start(apiCtrl);
+
+  PlaybackController *cli = new PlaybackController(library, engine);
+  cli->run();
+
+  httpServer->stop();
+  delete httpServer;
+  delete apiCtrl;
+  delete cli;
+  delete youtube;
+  delete cache;
   engine->shutdown();
   delete engine;
   delete library;
