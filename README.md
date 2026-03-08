@@ -2,7 +2,7 @@
 
 A low-latency C++ music engine with real-time DSP effects, FFT spectrum analysis, YouTube integration, and a REST API. All built from scratch with raw pointers, manual memory management, and zero external libraries.
 
-See demo of the engine features served via the REST API, showcased on a simple `testUI.html` file. 
+See demo of the engine features served via the REST API, showcased on a simple `testUI.html` file (UNMUTE video below!). 
 
 https://github.com/user-attachments/assets/f96565d5-ffeb-4c73-bea1-63628c55396b
 
