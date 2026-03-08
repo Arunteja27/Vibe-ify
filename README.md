@@ -4,6 +4,10 @@ A low-latency C++ music engine with real-time DSP effects, FFT spectrum analysis
 
 See demo of the engine features served via the REST API, showcased on a simple `testUI.html` file. 
 
+https://github.com/user-attachments/assets/f96565d5-ffeb-4c73-bea1-63628c55396b
+
+
+
 ## Features
 
 ### 🎛️ Real-Time DSP Effects
