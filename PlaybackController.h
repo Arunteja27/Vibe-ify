@@ -35,6 +35,13 @@ private:
   void cmdSearch(const std::string &args) const;
   void cmdVolume(const std::string &args);
   void cmdNowPlaying() const;
+  void cmdEcho(const std::string &args);
+  void cmdReverb(const std::string &args);
+  void cmdBass(const std::string &args);
+  void cmdDistort(const std::string &args);
+  void cmdSpeed(const std::string &args);
+  void cmdEffects() const;
+  void cmdClearEffects();
 };
 
 #endif
