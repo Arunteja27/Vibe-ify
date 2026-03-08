@@ -1,15 +1,15 @@
 CXX      = g++
 CXXFLAGS = -std=c++17 -O2 -Wall
-LDFLAGS  = -lwinmm
+LDFLAGS  = -lwinmm -lws2_32
 
 TARGET   = vibeify
 
-OBJECTS  = main.o Track.o Playlist.o TrackLibrary.o AudioEngine.o AudioEffect.o PlaybackController.o SpectrumAnalyzer.o YouTubeSource.o StreamCache.o
+OBJECTS  = main.o Track.o Playlist.o TrackLibrary.o AudioEngine.o AudioEffect.o PlaybackController.o SpectrumAnalyzer.o YouTubeSource.o StreamCache.o HttpServer.o ApiController.o
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJECTS) $(LDFLAGS)
 
-main.o: main.cc TrackLibrary.h AudioEngine.h PlaybackController.h
+main.o: main.cc TrackLibrary.h AudioEngine.h PlaybackController.h HttpServer.h ApiController.h YouTubeSource.h StreamCache.h
 	$(CXX) $(CXXFLAGS) -c main.cc
 
 Track.o: Track.cc Track.h AudioNode.h
@@ -38,6 +38,12 @@ YouTubeSource.o: YouTubeSource.cc YouTubeSource.h
 
 StreamCache.o: StreamCache.cc StreamCache.h
 	$(CXX) $(CXXFLAGS) -c StreamCache.cc
+
+HttpServer.o: HttpServer.cc HttpServer.h ApiController.h
+	$(CXX) $(CXXFLAGS) -c HttpServer.cc
+
+ApiController.o: ApiController.cc ApiController.h AudioEngine.h TrackLibrary.h YouTubeSource.h StreamCache.h
+	$(CXX) $(CXXFLAGS) -c ApiController.cc
 
 clean:
 	-del /Q $(TARGET).exe *.o 2>nul

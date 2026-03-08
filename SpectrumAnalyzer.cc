@@ -25,7 +25,6 @@ SpectrumAnalyzer::~SpectrumAnalyzer() {
 }
 
 void SpectrumAnalyzer::buildWindow() {
-  // Hann window reduces spectral leakage
   for (int i = 0; i < fftSize; ++i)
     windowFunc[i] =
         0.5f * (1.0f - cosf(2.0f * (float)M_PI * i / (fftSize - 1)));
@@ -41,7 +40,6 @@ int SpectrumAnalyzer::bitReverse(int x, int bits) {
 }
 
 void SpectrumAnalyzer::fft(float *real, float *imag, int n) {
-  // Determine number of bits for bit-reversal
   int bits = 0;
   int temp = n;
   while (temp > 1) {
@@ -49,7 +47,6 @@ void SpectrumAnalyzer::fft(float *real, float *imag, int n) {
     ++bits;
   }
 
-  // Bit-reversal permutation
   for (int i = 0; i < n; ++i) {
     int j = bitReverse(i, bits);
     if (j > i) {
@@ -62,7 +59,6 @@ void SpectrumAnalyzer::fft(float *real, float *imag, int n) {
     }
   }
 
-  // Cooley-Tukey butterfly stages
   for (int size = 2; size <= n; size *= 2) {
     int half = size / 2;
     float angle = -2.0f * (float)M_PI / size;
@@ -88,7 +84,6 @@ void SpectrumAnalyzer::fft(float *real, float *imag, int n) {
 }
 
 void SpectrumAnalyzer::analyze(const float *pcmBuffer, int numFrames) {
-  // Mix stereo to mono and apply Hann window
   int samples = (numFrames < fftSize) ? numFrames : fftSize;
 
   for (int i = 0; i < samples; ++i) {
@@ -97,16 +92,13 @@ void SpectrumAnalyzer::analyze(const float *pcmBuffer, int numFrames) {
     imagBuf[i] = 0.0f;
   }
 
-  // Zero-pad if buffer is smaller than FFT size
   for (int i = samples; i < fftSize; ++i) {
     realBuf[i] = 0.0f;
     imagBuf[i] = 0.0f;
   }
 
-  // Run FFT
   fft(realBuf, imagBuf, fftSize);
 
-  // Compute magnitudes (only first half — Nyquist)
   int halfFFT = fftSize / 2;
   float maxMag = 0.0001f;
   for (int i = 0; i < halfFFT; ++i) {
@@ -115,13 +107,11 @@ void SpectrumAnalyzer::analyze(const float *pcmBuffer, int numFrames) {
       maxMag = magnitudes[i];
   }
 
-  // Map FFT bins to frequency bands (logarithmic distribution)
+  // Log-scale bin mapping for perceptually even band distribution
   for (int b = 0; b < numBands; ++b) {
-    // Log-scale bin mapping: lower bands get fewer bins, upper bands get more
     float t0 = (float)b / numBands;
     float t1 = (float)(b + 1) / numBands;
 
-    // Exponential mapping for perceptually even band distribution
     int binStart = (int)(halfFFT * powf(t0, 2.0f));
     int binEnd = (int)(halfFFT * powf(t1, 2.0f));
     if (binEnd <= binStart)

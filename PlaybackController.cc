@@ -1,5 +1,6 @@
 #include "PlaybackController.h"
 #include <cstdlib>
+#include <fstream>
 #include <sstream>
 
 using namespace std;
@@ -559,6 +560,18 @@ void PlaybackController::cmdYtPlay(const string &args) {
       cout << "  Failed to load downloaded audio." << endl;
       delete track;
       return;
+    }
+  }
+
+  // Save to media/samples/ for persistence
+  string samplePath = "media/samples/" + artist + " - " + title + ".wav";
+  ifstream checkSample(samplePath);
+  if (!checkSample.good()) {
+    ifstream src(cachedPath, ios::binary);
+    ofstream dst(samplePath, ios::binary);
+    if (src.good() && dst.good()) {
+      dst << src.rdbuf();
+      cout << "  Saved to library: " << samplePath << endl;
     }
   }
 
