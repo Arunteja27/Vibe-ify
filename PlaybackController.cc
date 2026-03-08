@@ -6,13 +6,16 @@ using namespace std;
 
 PlaybackController::PlaybackController(TrackLibrary *library,
                                        AudioEngine *engine)
-    : library(library), engine(engine) {
+    : library(library), engine(engine), lastResultCount(0) {
   playlist = new Playlist("Now Playing");
+  youtube = new YouTubeSource();
+  cache = new StreamCache();
 }
 
 PlaybackController::~PlaybackController() {
   delete playlist;
-  playlist = nullptr;
+  delete youtube;
+  delete cache;
 }
 
 void PlaybackController::printBanner() const {
@@ -48,6 +51,10 @@ void PlaybackController::printHelp() const {
   cout << "    effects              - Show active effects" << endl;
   cout << "    clear                - Reset all effects" << endl;
   cout << "    spectrum             - Show frequency visualizer" << endl;
+  cout << endl;
+  cout << "  YouTube:" << endl;
+  cout << "    yt-search <query>    - Search YouTube" << endl;
+  cout << "    yt-play <1-5>        - Play from last search" << endl;
   cout << endl;
   cout << "  General:" << endl;
   cout << "    help                 - Show this help" << endl;
@@ -158,6 +165,10 @@ void PlaybackController::run() {
       cmdClearEffects();
     } else if (cmd == "spectrum" || cmd == "fft") {
       cmdSpectrum();
+    } else if (cmd == "yt-search" || cmd == "yts") {
+      cmdYtSearch(args);
+    } else if (cmd == "yt-play" || cmd == "ytp") {
+      cmdYtPlay(args);
     } else {
       cout << "  Unknown command: '" << cmd << "'. Type 'help' for commands."
            << endl;
@@ -467,4 +478,103 @@ void PlaybackController::cmdSpectrum() const {
   cout << endl;
   cout << "  Low ────────────────────────── High" << endl;
   cout << endl;
+}
+
+void PlaybackController::cmdYtSearch(const string &args) {
+  if (args.empty()) {
+    cout << "  Usage: yt-search <query>" << endl;
+    return;
+  }
+
+  if (!youtube->isAvailable()) {
+    cout << "  yt-dlp or ffmpeg not found." << endl;
+    cout << "  Install: https://github.com/yt-dlp/yt-dlp" << endl;
+    cout << "  Install: https://ffmpeg.org/download.html" << endl;
+    return;
+  }
+
+  cout << "  Searching YouTube for: " << args << "..." << endl;
+  lastResultCount = youtube->search(args, lastResults, 5);
+
+  if (lastResultCount == 0) {
+    cout << "  No results found." << endl;
+    return;
+  }
+
+  cout << "  === YouTube Results ===" << endl;
+  for (int i = 0; i < lastResultCount; ++i) {
+    int mins = lastResults[i].durationSec / 60;
+    int secs = lastResults[i].durationSec % 60;
+    cout << "  " << (i + 1) << ". " << lastResults[i].title;
+    if (lastResults[i].durationSec > 0) {
+      cout << " [" << mins << ":";
+      if (secs < 10)
+        cout << "0";
+      cout << secs << "]";
+    }
+    if (!lastResults[i].channel.empty())
+      cout << " - " << lastResults[i].channel;
+    cout << endl;
+  }
+  cout << "  Use 'yt-play <1-" << lastResultCount << ">' to play." << endl;
+}
+
+void PlaybackController::cmdYtPlay(const string &args) {
+  if (args.empty()) {
+    cout << "  Usage: yt-play <1-5> (search first with yt-search)" << endl;
+    return;
+  }
+
+  int idx = atoi(args.c_str()) - 1;
+  if (idx < 0 || idx >= lastResultCount) {
+    cout << "  Invalid selection. Search first with yt-search." << endl;
+    return;
+  }
+
+  YouTubeResult &result = lastResults[idx];
+  cout << "  Selected: " << result.title << endl;
+
+  // Check cache first
+  string cachedPath = cache->getCachedPath(result.videoId);
+  if (!cachedPath.empty()) {
+    cout << "  Found in cache." << endl;
+  } else {
+    // Download to cache
+    string outputPath = cache->store(result.videoId);
+    if (!youtube->download(result.url, outputPath)) {
+      cout << "  Download failed." << endl;
+      return;
+    }
+    cachedPath = outputPath;
+  }
+
+  // Parse artist/title from YouTube title
+  string artist, title;
+  YouTubeSource::parseTitle(result.title, artist, title);
+
+  // Load as a new Track and play
+  Track *track = new Track(title, artist, "YouTube", cachedPath);
+  if (!track->isLoaded()) {
+    if (!track->loadFromFile(cachedPath)) {
+      cout << "  Failed to load downloaded audio." << endl;
+      delete track;
+      return;
+    }
+  }
+
+  // Add to library so it shows in 'list'
+  library->addTrack(track);
+
+  delete playlist;
+  playlist = new Playlist("Now Playing");
+  track->reset();
+  playlist->enqueue(track);
+
+  if (engine->play(playlist)) {
+    cout << "  ▶ Playing: ";
+    track->print(cout);
+    cout << endl;
+  } else {
+    cout << "  Error: could not start playback." << endl;
+  }
 }

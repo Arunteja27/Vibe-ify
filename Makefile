@@ -4,7 +4,7 @@ LDFLAGS  = -lwinmm
 
 TARGET   = vibeify
 
-OBJECTS  = main.o Track.o Playlist.o TrackLibrary.o AudioEngine.o AudioEffect.o PlaybackController.o SpectrumAnalyzer.o
+OBJECTS  = main.o Track.o Playlist.o TrackLibrary.o AudioEngine.o AudioEffect.o PlaybackController.o SpectrumAnalyzer.o YouTubeSource.o StreamCache.o
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJECTS) $(LDFLAGS)
@@ -27,11 +27,17 @@ AudioEngine.o: AudioEngine.cc AudioEngine.h AudioNode.h AudioBuffer.h AudioEffec
 AudioEffect.o: AudioEffect.cc AudioEffect.h AudioNode.h
 	$(CXX) $(CXXFLAGS) -c AudioEffect.cc
 
-PlaybackController.o: PlaybackController.cc PlaybackController.h TrackLibrary.h Playlist.h AudioEngine.h
+PlaybackController.o: PlaybackController.cc PlaybackController.h TrackLibrary.h Playlist.h AudioEngine.h YouTubeSource.h StreamCache.h
 	$(CXX) $(CXXFLAGS) -c PlaybackController.cc
 
 SpectrumAnalyzer.o: SpectrumAnalyzer.cc SpectrumAnalyzer.h
 	$(CXX) $(CXXFLAGS) -c SpectrumAnalyzer.cc
+
+YouTubeSource.o: YouTubeSource.cc YouTubeSource.h
+	$(CXX) $(CXXFLAGS) -c YouTubeSource.cc
+
+StreamCache.o: StreamCache.cc StreamCache.h
+	$(CXX) $(CXXFLAGS) -c StreamCache.cc
 
 clean:
 	-del /Q $(TARGET).exe *.o 2>nul
