@@ -172,10 +172,10 @@ curl -X POST http://localhost:8080/api/yt/play -d "{\"index\": 1}"
 
 ## Technical Highlights
 
-- **Zero external libraries** — raw Win32 API (WaveOut, Winsock2), manual everything
-- **Raw pointer memory management** — `new`/`delete`, no smart pointers, no STL containers for core data
-- **Double-buffered audio** — callback-driven WaveOut with two alternating PCM buffers
-- **Dynamic effect chain** — rebuilds on parameter change, only active effects are processed
-- **In-place FFT** — Cooley-Tukey butterfly with bit-reversal permutation
-- **Hand-rolled HTTP** — raw TCP socket, manual HTTP parsing, JSON building
-- **Dual interface** — CLI and REST API control the same engine instance simultaneously
+- **Zero external libraries** - raw Win32 API (WaveOut, Winsock2), manual everything
+- **Raw pointer memory management** - `new`/`delete`, no smart pointers, no STL containers for core data
+- **Double-buffered audio** - callback-driven WaveOut with two alternating PCM buffers
+- **Dynamic effect chain** - rebuilds on parameter change, only active effects are processed
+- **In-place FFT** - Cooley-Tukey butterfly with bit-reversal permutation
+- **Hand-rolled HTTP** - raw TCP socket, manual HTTP parsing, JSON building
+- **Dual interface** - CLI and REST API control the same engine instance simultaneously
