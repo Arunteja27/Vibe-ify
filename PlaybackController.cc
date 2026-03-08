@@ -10,21 +10,18 @@ PlaybackController::PlaybackController(TrackLibrary *library,
     : library(library), engine(engine), lastResultCount(0) {
   playlist = new Playlist("Now Playing");
   youtube = new YouTubeSource();
-  cache = new StreamCache();
 }
 
 PlaybackController::~PlaybackController() {
   delete playlist;
   delete youtube;
-  delete cache;
 }
 
 void PlaybackController::printBanner() const {
   cout << endl;
   cout << "  ╔══════════════════════════════════════╗" << endl;
-  cout << "  ║     🎵  V I B E - I F Y  🎵         ║" << endl;
-  cout << "  ║     Spotify Backend Clone             ║" << endl;
-  cout << "  ║     Low-Latency C++ Music Engine      ║" << endl;
+  cout << "  ║     🎵  V I B E - I F Y  🎵          ║" << endl;
+  cout << "  ║     Low-Latency C++ Music Engine     ║" << endl;
   cout << "  ╚══════════════════════════════════════╝" << endl;
   cout << endl;
 }
@@ -483,19 +480,57 @@ void PlaybackController::cmdSpectrum() const {
 
 void PlaybackController::cmdYtSearch(const string &args) {
   if (args.empty()) {
-    cout << "  Usage: yt-search <query>" << endl;
+    cout << "  Usage: yt-search <query> [$t=max_seconds] [$s=max_mb]" << endl;
+    cout << "  Example: yts lofi beats $t=300 $s=50" << endl;
     return;
   }
 
   if (!youtube->isAvailable()) {
     cout << "  yt-dlp or ffmpeg not found." << endl;
-    cout << "  Install: https://github.com/yt-dlp/yt-dlp" << endl;
-    cout << "  Install: https://ffmpeg.org/download.html" << endl;
+    cout << "  Install: winget install yt-dlp" << endl;
     return;
   }
 
-  cout << "  Searching YouTube for: " << args << "..." << endl;
-  lastResultCount = youtube->search(args, lastResults, 5);
+  // Parse $t= and $s= filters from args
+  int maxDuration = 0;
+  int maxSizeMB = 0;
+  string query;
+  istringstream iss(args);
+  string token;
+  while (iss >> token) {
+    if (token.substr(0, 3) == "$t=")
+      maxDuration = atoi(token.c_str() + 3);
+    else if (token.substr(0, 3) == "$s=")
+      maxSizeMB = atoi(token.c_str() + 3);
+    else {
+      if (!query.empty())
+        query += " ";
+      query += token;
+    }
+  }
+
+  if (query.empty()) {
+    cout << "  No search query provided." << endl;
+    return;
+  }
+
+  cout << "  Searching YouTube for: " << query;
+  if (maxDuration > 0)
+    cout << " (max " << maxDuration << "s)";
+  if (maxSizeMB > 0)
+    cout << " (max " << maxSizeMB << "MB)";
+  cout << "..." << endl;
+
+  YouTubeResult allResults[15];
+  int totalFound = youtube->search(query, allResults, 15);
+
+  // Apply duration filter
+  lastResultCount = 0;
+  for (int i = 0; i < totalFound && lastResultCount < 5; ++i) {
+    if (maxDuration > 0 && allResults[i].durationSec > maxDuration)
+      continue;
+    lastResults[lastResultCount++] = allResults[i];
+  }
 
   if (lastResultCount == 0) {
     cout << "  No results found." << endl;
@@ -507,12 +542,10 @@ void PlaybackController::cmdYtSearch(const string &args) {
     int mins = lastResults[i].durationSec / 60;
     int secs = lastResults[i].durationSec % 60;
     cout << "  " << (i + 1) << ". " << lastResults[i].title;
-    if (lastResults[i].durationSec > 0) {
-      cout << " [" << mins << ":";
-      if (secs < 10)
-        cout << "0";
-      cout << secs << "]";
-    }
+    cout << " [" << mins << ":";
+    if (secs < 10)
+      cout << "0";
+    cout << secs << "]";
     if (!lastResults[i].channel.empty())
       cout << " - " << lastResults[i].channel;
     cout << endl;
@@ -535,43 +568,33 @@ void PlaybackController::cmdYtPlay(const string &args) {
   YouTubeResult &result = lastResults[idx];
   cout << "  Selected: " << result.title << endl;
 
-  // Check cache first
-  string cachedPath = cache->getCachedPath(result.videoId);
-  if (!cachedPath.empty()) {
-    cout << "  Found in cache." << endl;
-  } else {
-    // Download to cache
-    string outputPath = cache->store(result.videoId);
-    if (!youtube->download(result.url, outputPath)) {
-      cout << "  Download failed." << endl;
-      return;
-    }
-    cachedPath = outputPath;
-  }
-
   // Parse artist/title from YouTube title
   string artist, title;
   YouTubeSource::parseTitle(result.title, artist, title);
 
+  // Target path in samples folder
+  string samplePath = "media/samples/" + artist + " - " + title + ".wav";
+
+  // Check if already downloaded
+  ifstream checkFile(samplePath);
+  if (checkFile.good()) {
+    checkFile.close();
+    cout << "  Already in library." << endl;
+  } else {
+    if (!youtube->download(result.url, samplePath)) {
+      cout << "  Download failed." << endl;
+      return;
+    }
+    cout << "  Saved to library: " << samplePath << endl;
+  }
+
   // Load as a new Track and play
-  Track *track = new Track(title, artist, "YouTube", cachedPath);
+  Track *track = new Track(title, artist, "YouTube", samplePath);
   if (!track->isLoaded()) {
-    if (!track->loadFromFile(cachedPath)) {
+    if (!track->loadFromFile(samplePath)) {
       cout << "  Failed to load downloaded audio." << endl;
       delete track;
       return;
-    }
-  }
-
-  // Save to media/samples/ for persistence
-  string samplePath = "media/samples/" + artist + " - " + title + ".wav";
-  ifstream checkSample(samplePath);
-  if (!checkSample.good()) {
-    ifstream src(cachedPath, ios::binary);
-    ofstream dst(samplePath, ios::binary);
-    if (src.good() && dst.good()) {
-      dst << src.rdbuf();
-      cout << "  Saved to library: " << samplePath << endl;
     }
   }
 

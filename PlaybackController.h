@@ -3,7 +3,6 @@
 
 #include "AudioEngine.h"
 #include "Playlist.h"
-#include "StreamCache.h"
 #include "TrackLibrary.h"
 #include "YouTubeSource.h"
 #include <string>
@@ -21,9 +20,7 @@ private:
   AudioEngine *engine;
   Playlist *playlist;
   YouTubeSource *youtube;
-  StreamCache *cache;
 
-  // Last search results for yt-play by index
   YouTubeResult lastResults[5];
   int lastResultCount;
 

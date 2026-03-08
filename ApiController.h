@@ -2,7 +2,6 @@
 #define APICONTROLLER_H
 
 #include "AudioEngine.h"
-#include "StreamCache.h"
 #include "TrackLibrary.h"
 #include "YouTubeSource.h"
 #include <string>
@@ -11,7 +10,7 @@
 class ApiController {
 public:
   ApiController(TrackLibrary *library, AudioEngine *engine,
-                YouTubeSource *youtube, StreamCache *cache);
+                YouTubeSource *youtube);
   ~ApiController();
 
   std::string handleRequest(const std::string &method, const std::string &path,
@@ -21,7 +20,6 @@ private:
   TrackLibrary *library;
   AudioEngine *engine;
   YouTubeSource *youtube;
-  StreamCache *cache;
   Track *currentApiTrack;
   YouTubeResult lastResults[5];
   int lastResultCount;

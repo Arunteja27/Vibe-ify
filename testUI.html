@@ -1,0 +1,1086 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vibe-ify Test UI</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #121822;
+      --panel-2: #1a2230;
+      --text: #e6edf7;
+      --muted: #a8b3c7;
+      --border: #2b3648;
+      --ok: #3ccf8e;
+      --err: #ff7a7a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top, #162033 0%, var(--bg) 45%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 1.05rem;
+    }
+
+    .small {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1.2fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    @media (max-width: 1180px) {
+      .dashboard {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      margin: 0 0 10px;
+      color: #d6e2f1;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    input,
+    button {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      font-size: 0.92rem;
+    }
+
+    input {
+      background: #0d1420;
+      color: var(--text);
+      flex: 1;
+      min-width: 110px;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      height: 24px;
+      background: transparent;
+      border: none;
+      min-width: 130px;
+      flex: 1;
+    }
+
+    button {
+      background: #1f2a3a;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: #4f5f7c;
+    }
+
+    button.primary {
+      background: #1c3b2b;
+      border-color: #2f7f54;
+      color: #d7ffe8;
+    }
+
+    button.warn {
+      background: #433116;
+      border-color: #8a6528;
+      color: #ffe7bf;
+    }
+
+    button.stop {
+      background: #432020;
+      border-color: #8e3a3a;
+      color: #ffd2d2;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0d1420;
+      padding: 8px;
+    }
+
+    .panel-title {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .playback-panels {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      min-height: 220px;
+    }
+
+    #tracksPanel {
+      max-height: 220px;
+      overflow: auto;
+      display: grid;
+      gap: 6px;
+    }
+
+    .track-item {
+      border: 1px solid #31415a;
+      background: #111b2a;
+      border-radius: 8px;
+      padding: 7px;
+      cursor: pointer;
+    }
+
+    .track-item:hover {
+      border-color: #5d77a2;
+      background: #152338;
+    }
+
+    .track-title {
+      font-size: 1rem;
+      color: #e6edf7;
+    }
+
+    .track-sub {
+      font-size: 0.82rem;
+      color: #9eb2cf;
+      margin-top: 2px;
+    }
+
+    .kv {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      color: #d9e4f4;
+    }
+
+    .muted-empty {
+      font-size: 0.84rem;
+      color: #95a8c7;
+    }
+
+    .note {
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .slider-grid {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: 58px 1fr 56px;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0d1420;
+      padding: 6px 8px;
+    }
+
+    .slider-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-transform: lowercase;
+    }
+
+    .slider-value {
+      font-size: 0.82rem;
+      color: #d5e6ff;
+      text-align: right;
+      min-width: 42px;
+    }
+
+    .spectrum-wrap {
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0a111c;
+      padding: 8px;
+    }
+
+    #spectrumCanvas {
+      width: 100%;
+      height: 130px;
+      display: block;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #0d1a2d, #07101b);
+    }
+
+    #spectrumState {
+      margin-top: 6px;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .spectrum-controls {
+      align-items: center;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
+
+    .spectrum-controls label {
+      font-size: 0.84rem;
+      color: var(--muted);
+      min-width: 76px;
+    }
+
+    #smoothnessRange {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    #smoothnessValue {
+      font-size: 0.84rem;
+      color: #d5e6ff;
+      min-width: 42px;
+      text-align: right;
+    }
+
+    .youtube-results {
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0d1420;
+      max-height: 360px;
+      overflow: auto;
+      padding: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .yt-item {
+      display: grid;
+      grid-template-columns: 96px 1fr auto;
+      gap: 8px;
+      border: 1px solid #31415a;
+      background: #111b2a;
+      border-radius: 8px;
+      padding: 6px;
+      cursor: pointer;
+      align-items: center;
+    }
+
+    .yt-item:hover {
+      border-color: #5d77a2;
+      background: #152338;
+    }
+
+    .yt-thumb {
+      width: 96px;
+      height: 54px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #2e3a50;
+      background: #0a111c;
+    }
+
+    .yt-title {
+      font-size: 0.9rem;
+      color: #e9f1ff;
+      line-height: 1.25;
+      margin-bottom: 2px;
+    }
+
+    .yt-sub {
+      font-size: 0.78rem;
+      color: #9eb2cf;
+    }
+
+    .yt-index {
+      font-size: 0.76rem;
+      color: #b3c7e3;
+      border: 1px solid #3a4a63;
+      border-radius: 6px;
+      padding: 2px 6px;
+      white-space: nowrap;
+    }
+
+    #ytActionMsg {
+      margin-top: 6px;
+      min-height: 18px;
+      font-size: 0.84rem;
+    }
+
+    .ok {
+      color: var(--ok);
+    }
+
+    .err {
+      color: var(--err);
+    }
+
+    .queue-card {
+      grid-column: 1;
+    }
+
+    .general-card {
+      grid-column: 2;
+    }
+
+    @media (max-width: 1180px) {
+
+      .queue-card,
+      .general-card {
+        grid-column: auto;
+      }
+    }
+
+    .log {
+      background: #09101a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 0;
+    }
+
+    .log-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .log-toggle {
+      width: 30px;
+      min-width: 30px;
+      padding: 4px;
+      line-height: 1;
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    #logBody {
+      margin-top: 10px;
+      display: none;
+    }
+
+    #logBody.open {
+      display: block;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.86rem;
+      line-height: 1.35;
+      color: #dbe7f7;
+      max-height: 320px;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div>
+      <h1>Vibe-ify Test UI</h1>
+      <!-- <div class="subtitle">Target: <code>http://localhost:8080</code></div> -->
+      <br>
+      <div class="small">This page calls the REST routes implemented in <code>ApiController.cc</code>.</div>
+    </div>
+
+    <div class="dashboard">
+      <section class="card">
+        <h2>Playback</h2>
+        <div class="row">
+          <button onclick="loadTracks()">list</button>
+          <button onclick="loadNow()">now</button>
+          <button onclick="loadStatus()">status</button>
+        </div>
+
+        <div class="playback-panels">
+          <div class="panel">
+            <div class="panel-title">Tracks (click to play)</div>
+            <div id="tracksPanel">
+              <div class="muted-empty">Click "list" to load tracks.</div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title" id="infoPanelTitle">Now</div>
+            <div id="infoPanel" class="kv muted-empty">Click "now" or "status" to load playback info.</div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <button class="warn" onclick="pausePlayback()">pause</button>
+          <button class="primary" onclick="resumePlayback()">resume</button>
+          <button class="stop" onclick="stopPlayback()">stop</button>
+        </div>
+        <div class="row">
+          <button disabled title="No REST route in ApiController.cc">skip (CLI only)</button>
+          <button disabled title="No REST route in ApiController.cc">prev (CLI only)</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Volume + Effects</h2>
+        <div class="slider-grid">
+          <div class="slider-row">
+            <span class="slider-label">volume</span>
+            <input id="volumeLevel" type="range" min="0" max="100" value="100"
+              oninput="setSliderLabel('volumeLevel','volumeValue')" />
+            <span id="volumeValue" class="slider-value">100</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">echo</span>
+            <input id="echoVal" type="range" min="0" max="100" value="0"
+              oninput="setSliderLabel('echoVal','echoValue')" />
+            <span id="echoValue" class="slider-value">0</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">reverb</span>
+            <input id="reverbVal" type="range" min="0" max="100" value="0"
+              oninput="setSliderLabel('reverbVal','reverbValue')" />
+            <span id="reverbValue" class="slider-value">0</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">bass</span>
+            <input id="bassVal" type="range" min="0" max="100" value="0"
+              oninput="setSliderLabel('bassVal','bassValue')" />
+            <span id="bassValue" class="slider-value">0</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">distort</span>
+            <input id="distortVal" type="range" min="0" max="100" value="0"
+              oninput="setSliderLabel('distortVal','distortValue')" />
+            <span id="distortValue" class="slider-value">0</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">speed</span>
+            <input id="speedVal" type="range" min="25" max="400" value="100"
+              oninput="setSliderLabel('speedVal','speedValue')" />
+            <span id="speedValue" class="slider-value">100</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <button onclick="setVolume()">set volume</button>
+          <button onclick="setEffects()">apply effects</button>
+          <button onclick="sendGet('/api/effects')">effects</button>
+          <button onclick="clearEffects()">clear</button>
+          <button id="spectrumBtn" onclick="toggleSpectrum()">spectrum: start</button>
+        </div>
+
+        <div class="spectrum-wrap">
+          <canvas id="spectrumCanvas" width="540" height="130"></canvas>
+          <div id="spectrumState">Spectrum idle. Click "spectrum: start".</div>
+          <div class="row spectrum-controls">
+            <label for="smoothnessRange">Smoothness</label>
+            <input id="smoothnessRange" type="range" min="5" max="95" value="45" step="1"
+              oninput="updateSmoothnessLabel()" />
+            <span id="smoothnessValue">45%</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>YouTube</h2>
+        <div class="row">
+          <input id="ytQuery" placeholder="yt search query" />
+          <button onclick="searchYouTube()">yt-search &lt;query&gt;</button>
+        </div>
+        <div id="ytActionMsg" class="note"></div>
+
+        <div id="ytResults" class="youtube-results">
+          <div class="muted-empty">Search YouTube to populate results here.</div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <input id="ytIndex" type="number" min="1" max="5" placeholder="1-5" />
+          <button onclick="playYouTubeFromInput()">yt-play &lt;1-5&gt;</button>
+        </div>
+      </section>
+
+      <section class="card queue-card">
+        <h2>Queue + Search</h2>
+        <div class="row">
+          <input id="queueId" type="number" min="1" placeholder="track id" />
+          <button onclick="queueTrack()">queue &lt;id&gt;</button>
+          <button onclick="sendGet('/api/queue')">queue status</button>
+        </div>
+        <div class="row">
+          <input id="searchQuery" placeholder="local query" />
+          <button onclick="searchLocal()">search &lt;query&gt;</button>
+        </div>
+      </section>
+
+      <section class="card general-card">
+        <h2>General</h2>
+        <div class="row">
+          <button disabled title="No REST route in ApiController.cc">help (CLI only)</button>
+          <button disabled title="No REST route in ApiController.cc">quit (CLI only)</button>
+        </div>
+        <div class="note">`help` and `quit` are terminal-only in current backend.</div>
+      </section>
+    </div>
+
+    <section class="log">
+      <div class="log-header">
+        <div class="log-title-wrap">
+          <button class="log-toggle" id="logToggle" onclick="toggleLog()">▸</button>
+          <h2 style="margin:0; font-size:1rem;">Response Log</h2>
+        </div>
+        <button onclick="clearLog()">Clear Log</button>
+      </div>
+      <div id="logBody">
+        <pre id="output">Ready.</pre>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const BASE = 'http://localhost:8080';
+
+    const out = document.getElementById('output');
+    const logBody = document.getElementById('logBody');
+    const logToggle = document.getElementById('logToggle');
+
+    const tracksPanel = document.getElementById('tracksPanel');
+    const infoPanel = document.getElementById('infoPanel');
+    const infoPanelTitle = document.getElementById('infoPanelTitle');
+    let playbackInfoMode = 'now';
+
+    const ytResults = document.getElementById('ytResults');
+    const ytActionMsg = document.getElementById('ytActionMsg');
+
+    const spectrumCanvas = document.getElementById('spectrumCanvas');
+    const spectrumCtx = spectrumCanvas.getContext('2d');
+    const spectrumBtn = document.getElementById('spectrumBtn');
+    const spectrumState = document.getElementById('spectrumState');
+    const smoothnessRange = document.getElementById('smoothnessRange');
+    const smoothnessValue = document.getElementById('smoothnessValue');
+
+    let spectrumRunning = false;
+    let spectrumPollHandle = null;
+    let spectrumFrameHandle = null;
+    let spectrumFetchBusy = false;
+    const SPECTRUM_POLL_MS = 25;
+    const SPECTRUM_FETCH_TIMEOUT_MS = 1200;
+    let spectrumTarget = [];
+    let spectrumDraw = [];
+    let spectrumSmoothness = 1 - (Number(smoothnessRange.value) / 100);
+
+    function stamp() {
+      return new Date().toLocaleTimeString();
+    }
+
+    function toggleLog() {
+      const isOpen = logBody.classList.toggle('open');
+      logToggle.textContent = isOpen ? '▾' : '▸';
+    }
+
+    function print(title, payload) {
+      const text = typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2);
+      out.textContent = `[${stamp()}] ${title}\n${text}\n\n` + out.textContent;
+    }
+
+    function clearLog() {
+      out.textContent = 'Ready.';
+    }
+
+    function safeJson(text) {
+      try { return JSON.parse(text); }
+      catch { return text; }
+    }
+
+    async function requestJson(method, path, bodyObj, log = true) {
+      try {
+        const options = { method, headers: { 'Content-Type': 'application/json' } };
+        if (bodyObj) options.body = JSON.stringify(bodyObj);
+
+        const res = await fetch(BASE + path, options);
+        const text = await res.text();
+        const data = safeJson(text);
+
+        if (log) {
+          print(`${method} ${path} (${res.status})`, data);
+        }
+
+        return { ok: res.ok, status: res.status, data };
+      } catch (err) {
+        if (log) {
+          print(`${method} ${path} ERROR`, String(err));
+        }
+        return { ok: false, status: 0, data: { error: String(err) } };
+      }
+    }
+
+    async function sendGet(path) {
+      return requestJson('GET', path, null, true);
+    }
+
+    async function sendPost(path, bodyObj) {
+      return requestJson('POST', path, bodyObj, true);
+    }
+
+    function intVal(id) {
+      const v = document.getElementById(id).value.trim();
+      if (!v) return null;
+      const n = parseInt(v, 10);
+      return Number.isNaN(n) ? null : n;
+    }
+
+    function sliderInt(id) {
+      const n = parseInt(document.getElementById(id).value, 10);
+      return Number.isNaN(n) ? null : n;
+    }
+
+    function strVal(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function setSliderLabel(inputId, labelId) {
+      const input = document.getElementById(inputId);
+      const label = document.getElementById(labelId);
+      if (input && label) label.textContent = input.value;
+    }
+
+    function setAllSliderLabels() {
+      setSliderLabel('volumeLevel', 'volumeValue');
+      setSliderLabel('echoVal', 'echoValue');
+      setSliderLabel('reverbVal', 'reverbValue');
+      setSliderLabel('bassVal', 'bassValue');
+      setSliderLabel('distortVal', 'distortValue');
+      setSliderLabel('speedVal', 'speedValue');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function loadTracks() {
+      const res = await sendGet('/api/tracks');
+      if (!res.ok || !res.data || !Array.isArray(res.data.tracks)) {
+        tracksPanel.innerHTML = '<div class="muted-empty">Could not load tracks.</div>';
+        return;
+      }
+
+      if (res.data.tracks.length === 0) {
+        tracksPanel.innerHTML = '<div class="muted-empty">No tracks loaded.</div>';
+        return;
+      }
+
+      tracksPanel.innerHTML = res.data.tracks.map((t) => `
+        <div class="track-item" onclick="playTrackById(${Number(t.id)})">
+          <div class="track-title">#${Number(t.id)} ${escapeHtml(t.title || 'Untitled')}</div>
+          <div class="track-sub">${escapeHtml(t.artist || 'Unknown artist')} | ${escapeHtml(t.genre || 'Unknown genre')}</div>
+        </div>
+      `).join('');
+    }
+
+    async function loadNow() {
+      playbackInfoMode = 'now';
+      infoPanelTitle.textContent = 'Now';
+
+      const res = await sendGet('/api/now');
+      const d = res.data || {};
+      infoPanel.innerHTML = `
+        <div class="kv"><strong>Song:</strong> ${escapeHtml(d.title || 'None')}</div>
+        <div class="kv"><strong>Volume:</strong> ${Number.isFinite(d.volume) ? d.volume : '-'}%</div>
+      `;
+    }
+
+    async function loadStatus() {
+      playbackInfoMode = 'status';
+      infoPanelTitle.textContent = 'Status';
+
+      const res = await sendGet('/api/status');
+      const d = res.data || {};
+      infoPanel.innerHTML = `
+        <div class="kv"><strong>Playing:</strong> ${d.playing ? 'yes' : 'no'}</div>
+        <div class="kv"><strong>Paused:</strong> ${d.paused ? 'yes' : 'no'}</div>
+        <div class="kv"><strong>Artist:</strong> ${escapeHtml(d.artist || 'None')}</div>
+        <div class="kv"><strong>Cursor:</strong> ${Number.isFinite(d.cursor) ? d.cursor : '-'}</div>
+        <div class="kv"><strong>Total Frames:</strong> ${Number.isFinite(d.totalFrames) ? d.totalFrames : '-'}</div>
+      `;
+    }
+
+    async function refreshPlaybackInfoBox() {
+      if (playbackInfoMode === 'status') await loadStatus();
+      else await loadNow();
+    }
+
+    async function playTrackById(id) {
+      const res = await sendPost('/api/play', { id });
+      if (res.ok && !(res.data && res.data.error)) {
+        await refreshPlaybackInfoBox();
+      }
+    }
+
+    async function pausePlayback() {
+      await sendPost('/api/pause');
+      await refreshPlaybackInfoBox();
+    }
+
+    async function resumePlayback() {
+      await sendPost('/api/resume');
+      await refreshPlaybackInfoBox();
+    }
+
+    async function stopPlayback() {
+      await sendPost('/api/stop');
+      await refreshPlaybackInfoBox();
+    }
+
+    function queueTrack() {
+      const id = intVal('queueId');
+      if (!id) return print('Validation', 'Enter a valid track id (>=1).');
+      sendPost('/api/queue', { id });
+    }
+
+    function searchLocal() {
+      const query = strVal('searchQuery');
+      if (!query) return print('Validation', 'Enter a search query.');
+      sendPost('/api/search', { query });
+    }
+
+    function setVolume() {
+      const level = sliderInt('volumeLevel');
+      if (level === null) return print('Validation', 'Volume slider value missing.');
+      sendPost('/api/volume', { level });
+    }
+
+    function clearEffectInputs() {
+      document.getElementById('echoVal').value = '0';
+      document.getElementById('reverbVal').value = '0';
+      document.getElementById('bassVal').value = '0';
+      document.getElementById('distortVal').value = '0';
+      document.getElementById('speedVal').value = '100';
+      setAllSliderLabels();
+    }
+
+    async function clearEffects() {
+      await sendPost('/api/effects', { clear: 'true' });
+      clearEffectInputs();
+    }
+
+    function updateSmoothnessLabel() {
+      const v = Number(smoothnessRange.value);
+      spectrumSmoothness = Math.max(0.05, Math.min(0.95, 1 - (v / 100)));
+      smoothnessValue.textContent = `${v}%`;
+    }
+
+    function setEffects() {
+      const body = {
+        echo: sliderInt('echoVal'),
+        reverb: sliderInt('reverbVal'),
+        bass: sliderInt('bassVal'),
+        distortion: sliderInt('distortVal'),
+        speed: sliderInt('speedVal')
+      };
+      sendPost('/api/effects', body);
+    }
+
+    function formatDuration(sec) {
+      const s = Number(sec);
+      if (!Number.isFinite(s) || s < 0) return '--:--';
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const r = Math.floor(s % 60);
+      if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(r).padStart(2, '0')}`;
+      return `${m}:${String(r).padStart(2, '0')}`;
+    }
+
+    function extractVideoId(result) {
+      const candidate = String(result.videoId || '').trim();
+      if (candidate && !candidate.includes('/') && candidate.length <= 20) {
+        return candidate;
+      }
+
+      const probe = String(result.url || result.videoId || '').trim();
+      if (!probe) return '';
+
+      try {
+        const u = new URL(probe);
+        if (u.hostname.includes('youtu.be')) {
+          return u.pathname.replace('/', '').trim();
+        }
+        return u.searchParams.get('v') || '';
+      } catch {
+        return '';
+      }
+    }
+
+    function thumbUrl(result) {
+      const id = extractVideoId(result);
+      if (!id) return '';
+      return `https://img.youtube.com/vi/${encodeURIComponent(id)}/mqdefault.jpg`;
+    }
+
+    function setYtMessage(msg, isError = false) {
+      ytActionMsg.textContent = msg || '';
+      ytActionMsg.className = isError ? 'err' : 'ok';
+    }
+
+    function renderYouTubeResults(results) {
+      if (!results || results.length === 0) {
+        ytResults.innerHTML = '<div class="muted-empty">No results found.</div>';
+        return;
+      }
+
+      ytResults.innerHTML = results.map((r) => {
+        const idx = Number(r.index) || 0;
+        const title = escapeHtml(r.title || 'Untitled');
+        const artist = escapeHtml(r.channel || 'Unknown artist');
+        const dur = formatDuration(r.duration);
+        const thumb = thumbUrl(r);
+        const thumbHtml = thumb
+          ? `<img class="yt-thumb" src="${thumb}" alt="thumb" onerror="this.style.display='none'" />`
+          : `<div class="yt-thumb"></div>`;
+
+        return `
+          <div class="yt-item" onclick="playYouTubeIndex(${idx})" title="Click to download and play">
+            ${thumbHtml}
+            <div>
+              <div class="yt-title">${title}</div>
+              <div class="yt-sub">${artist} | ${dur}</div>
+            </div>
+            <div class="yt-index">#${idx}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function searchYouTube() {
+      const query = strVal('ytQuery');
+      if (!query) {
+        setYtMessage('Enter a YouTube query.', true);
+        return;
+      }
+
+      setYtMessage('Searching...');
+      const res = await sendPost('/api/yt/search', { query });
+
+      if (!res.ok || (res.data && res.data.error)) {
+        setYtMessage(res.data && res.data.error ? res.data.error : 'Search failed.', true);
+        ytResults.innerHTML = '<div class="muted-empty">Search failed.</div>';
+        return;
+      }
+
+      const results = Array.isArray(res.data?.results) ? res.data.results : [];
+      renderYouTubeResults(results);
+      setYtMessage(`Loaded ${results.length} result(s). Click one to play.`);
+    }
+
+    async function playYouTubeIndex(index) {
+      if (!index || index < 1) {
+        setYtMessage('Invalid result index.', true);
+        return;
+      }
+
+      document.getElementById('ytIndex').value = index;
+      setYtMessage(`Downloading/playing #${index}...`);
+
+      const res = await sendPost('/api/yt/play', { index });
+      const err = res.data && res.data.error;
+
+      if (!res.ok || err) {
+        setYtMessage(err || 'Download/play failed.', true);
+        return;
+      }
+
+      setYtMessage(`Now playing #${index}.`);
+      await refreshPlaybackInfoBox();
+      await loadTracks();
+    }
+
+    function playYouTubeFromInput() {
+      const index = intVal('ytIndex');
+      if (!index) {
+        setYtMessage('Enter a result index (1-5).', true);
+        return;
+      }
+      playYouTubeIndex(index);
+    }
+
+    function drawSpectrumFrame() {
+      const w = spectrumCanvas.width;
+      const h = spectrumCanvas.height;
+
+      spectrumCtx.clearRect(0, 0, w, h);
+      spectrumCtx.fillStyle = '#08111f';
+      spectrumCtx.fillRect(0, 0, w, h);
+
+      if (spectrumDraw.length === 0) {
+        spectrumCtx.fillStyle = '#7f8da4';
+        spectrumCtx.font = '12px Segoe UI';
+        spectrumCtx.fillText('No spectrum data yet', 12, 20);
+      } else {
+        const n = spectrumDraw.length;
+        const gap = 2;
+        const barW = Math.max(2, Math.floor((w - gap * (n - 1)) / n));
+
+        for (let i = 0; i < n; i++) {
+          const target = Math.max(0, Math.min(1, spectrumTarget[i] || 0));
+          const cur = spectrumDraw[i] || 0;
+          const smoothed = cur + (target - cur) * spectrumSmoothness;
+          spectrumDraw[i] = smoothed;
+
+          const mag = smoothed;
+          const barH = Math.max(2, Math.floor(mag * h));
+          const x = i * (barW + gap);
+          const y = h - barH;
+
+          const red = Math.min(255, Math.floor(70 + mag * 200));
+          const green = Math.min(255, Math.floor(130 + mag * 100));
+          const blue = Math.min(255, Math.floor(120 + mag * 80));
+          spectrumCtx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+          spectrumCtx.fillRect(x, y, barW, barH);
+        }
+      }
+
+      if (spectrumRunning) {
+        spectrumFrameHandle = requestAnimationFrame(drawSpectrumFrame);
+      }
+    }
+
+    async function fetchSpectrum() {
+      if (spectrumFetchBusy) return;
+      spectrumFetchBusy = true;
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), SPECTRUM_FETCH_TIMEOUT_MS);
+
+      try {
+        const res = await fetch(BASE + '/api/spectrum', { method: 'GET', signal: controller.signal });
+
+        if (!res.ok) {
+          spectrumState.textContent = `Spectrum error: HTTP ${res.status}`;
+          return;
+        }
+
+        const payload = await res.json();
+        if (!payload || !Array.isArray(payload.bands)) {
+          spectrumState.textContent = 'Spectrum error: invalid payload';
+          return;
+        }
+
+        spectrumTarget = payload.bands.map((v) => {
+          const n = Number(v);
+          return Number.isFinite(n) ? n : 0;
+        });
+
+        if (spectrumDraw.length !== spectrumTarget.length) {
+          spectrumDraw = new Array(spectrumTarget.length).fill(0);
+        }
+
+        spectrumState.textContent = `Live spectrum: ${payload.count || spectrumTarget.length} bands | ${Math.round(1000 / SPECTRUM_POLL_MS)} Hz poll`;
+      } catch (err) {
+        const msg = String(err);
+        spectrumState.textContent = msg.includes('AbortError')
+          ? 'Spectrum fetch timeout (backend busy)'
+          : `Spectrum fetch error: ${msg}`;
+      } finally {
+        clearTimeout(timeout);
+        spectrumFetchBusy = false;
+      }
+    }
+
+    function startSpectrum() {
+      if (spectrumRunning) return;
+      spectrumRunning = true;
+      spectrumBtn.textContent = 'spectrum: stop';
+      spectrumState.textContent = 'Starting live spectrum...';
+
+      fetchSpectrum();
+      spectrumPollHandle = setInterval(fetchSpectrum, SPECTRUM_POLL_MS);
+      drawSpectrumFrame();
+    }
+
+    function stopSpectrum() {
+      spectrumRunning = false;
+      spectrumBtn.textContent = 'spectrum: start';
+      spectrumState.textContent = 'Spectrum idle. Click "spectrum: start".';
+
+      if (spectrumPollHandle) {
+        clearInterval(spectrumPollHandle);
+        spectrumPollHandle = null;
+      }
+
+      if (spectrumFrameHandle) {
+        cancelAnimationFrame(spectrumFrameHandle);
+        spectrumFrameHandle = null;
+      }
+    }
+
+    function toggleSpectrum() {
+      if (spectrumRunning) stopSpectrum();
+      else startSpectrum();
+    }
+
+    setAllSliderLabels();
+    updateSmoothnessLabel();
+    window.addEventListener('beforeunload', stopSpectrum);
+  </script>
+</body>
+
+</html>
