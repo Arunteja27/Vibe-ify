@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <sstream>
 
+using namespace std;
 
 PlaybackController::PlaybackController(TrackLibrary *library,
                                        AudioEngine *engine)
@@ -72,11 +73,9 @@ void PlaybackController::run() {
   string line;
   while (true) {
     printPrompt();
-
     if (!getline(cin, line))
       break;
 
-    // Trim whitespace
     size_t start = line.find_first_not_of(" \t\r\n");
     if (start == string::npos)
       continue;
@@ -87,13 +86,11 @@ void PlaybackController::run() {
     if (line.empty())
       continue;
 
-    // Parse command and arguments
     string cmd, args;
     size_t spacePos = line.find(' ');
     if (spacePos != string::npos) {
       cmd = line.substr(0, spacePos);
       args = line.substr(spacePos + 1);
-      // Trim args
       start = args.find_first_not_of(" \t");
       if (start != string::npos)
         args = args.substr(start);
@@ -101,7 +98,6 @@ void PlaybackController::run() {
       cmd = line;
     }
 
-    // Convert command to lowercase
     for (int i = 0; i < (int)cmd.length(); ++i)
       if (cmd[i] >= 'A' && cmd[i] <= 'Z')
         cmd[i] += 32;
@@ -145,7 +141,6 @@ void PlaybackController::cmdList() const { library->print(cout); }
 
 void PlaybackController::cmdPlay(const string &args) {
   if (args.empty()) {
-    // If paused, resume; otherwise show usage
     if (engine->isPaused()) {
       cmdResume();
       return;
@@ -166,7 +161,6 @@ void PlaybackController::cmdPlay(const string &args) {
     return;
   }
 
-  // Reset the playlist and start with this track
   delete playlist;
   playlist = new Playlist("Now Playing");
   track->reset();
@@ -254,7 +248,6 @@ void PlaybackController::cmdQueue(const string &args) {
   track->print(cout);
   cout << " (" << playlist->getSize() << " in queue)" << endl;
 
-  // If not currently playing, start playback
   if (!engine->isPlaying()) {
     engine->play(playlist);
     cout << "  ▶ Started playback." << endl;
@@ -280,7 +273,6 @@ void PlaybackController::cmdSearch(const string &args) const {
   } else {
     cout << "  Found " << count << " result(s) for '" << args << "':" << endl;
     for (int i = 0; i < count; ++i) {
-      // Find the original index in the library
       for (int j = 0; j < library->getSize(); ++j) {
         if (library->getTrack(j) == results[i]) {
           cout << "    " << (j + 1) << ". ";

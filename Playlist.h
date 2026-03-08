@@ -4,42 +4,37 @@
 #include "AudioNode.h"
 #include "Track.h"
 
-// Playlist: a queue of Track* references (non-owning).
-// Derives from AudioNode so the AudioEngine can play it polymorphically.
-// Demonstrates: polymorphism (Playlist is-a AudioNode), raw pointers.
+// Queue of Track* references (non-owning), playable as an AudioNode.
 class Playlist : public AudioNode {
 public:
-  Playlist(const string &name);
+  Playlist(const std::string &name);
   ~Playlist();
 
-  // Queue management
-  bool enqueue(Track *track); // Add a track to the end of the queue
-  Track *dequeue();           // Remove and return the front track
-  Track *current() const;     // Get the currently playing track
-  bool next();                // Advance to the next track
-  bool prev();                // Go back to the previous track
+  bool enqueue(Track *track);
+  Track *dequeue();
+  Track *current() const;
+  bool next();
+  bool prev();
 
-  // Accessors
-  const string &getName() const;
+  const std::string &getName() const;
   int getSize() const;
   int getCurrentIndex() const;
-  Track *getTrack(int index) const; // Access by index (bounds-checked)
+  Track *getTrack(int index) const;
 
-  // AudioNode interface
   int process(float *buffer, int numFrames) override;
   const char *getType() const override;
   AudioNode *clone() const override;
   void reset() override;
-  void print(ostream &os) const override;
+  void print(std::ostream &os) const override;
 
 private:
-  string name;
-  Track **tracks; // Raw pointer array of Track* (non-owning)
+  std::string name;
+  Track **tracks;
   int capacity;
   int size;
-  int currentIndex; // Index of currently playing track
+  int currentIndex;
 
-  void grow(); // Double capacity when full
+  void grow();
 };
 
 #endif

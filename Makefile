@@ -9,7 +9,7 @@ OBJECTS  = main.o Track.o Playlist.o TrackLibrary.o AudioEngine.o AudioEffect.o 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJECTS) $(LDFLAGS)
 
-main.o: main.cc TrackLibrary.h AudioEngine.h PlaybackController.h WavGenerator.h
+main.o: main.cc TrackLibrary.h AudioEngine.h PlaybackController.h
 	$(CXX) $(CXXFLAGS) -c main.cc
 
 Track.o: Track.cc Track.h AudioNode.h
@@ -31,6 +31,6 @@ PlaybackController.o: PlaybackController.cc PlaybackController.h TrackLibrary.h 
 	$(CXX) $(CXXFLAGS) -c PlaybackController.cc
 
 clean:
-	rm -f $(TARGET) *.o
+	-del /Q $(TARGET).exe *.o 2>nul
 
 .PHONY: clean

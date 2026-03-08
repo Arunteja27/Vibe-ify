@@ -1,6 +1,8 @@
 #include "Playlist.h"
 #include <cstring>
 
+using namespace std;
+
 Playlist::Playlist(const string &name)
     : name(name), capacity(8), size(0), currentIndex(0) {
   tracks = new Track *[capacity];
@@ -8,7 +10,6 @@ Playlist::Playlist(const string &name)
 }
 
 Playlist::~Playlist() {
-  // Non-owning: do NOT delete the Track objects, just the pointer array
   delete[] tracks;
   tracks = nullptr;
 }
@@ -17,12 +18,8 @@ void Playlist::grow() {
   int newCap = capacity * 2;
   Track **newArr = new Track *[newCap];
   memset(newArr, 0, newCap * sizeof(Track *));
-
-  // Copy existing pointers via raw iteration
-  for (int i = 0; i < size; ++i) {
+  for (int i = 0; i < size; ++i)
     newArr[i] = tracks[i];
-  }
-
   delete[] tracks;
   tracks = newArr;
   capacity = newCap;
@@ -41,13 +38,9 @@ Track *Playlist::dequeue() {
   if (size == 0)
     return nullptr;
   Track *front = tracks[0];
-
-  // Shift all pointers forward (raw pointer arithmetic)
-  for (int i = 1; i < size; ++i) {
+  for (int i = 1; i < size; ++i)
     tracks[i - 1] = tracks[i];
-  }
   tracks[--size] = nullptr;
-
   if (currentIndex > 0)
     --currentIndex;
   return front;
@@ -95,14 +88,8 @@ int Playlist::process(float *buffer, int numFrames) {
     return 0;
 
   int framesRead = cur->process(buffer, numFrames);
-
-  // Auto-advance to next track when current finishes
-  if (framesRead == 0) {
-    if (next()) {
-      return process(buffer, numFrames); // Recursive call for gapless
-    }
-  }
-
+  if (framesRead == 0 && next())
+    return process(buffer, numFrames);
   return framesRead;
 }
 
@@ -110,19 +97,17 @@ const char *Playlist::getType() const { return "Playlist"; }
 
 AudioNode *Playlist::clone() const {
   Playlist *copy = new Playlist(name);
-  for (int i = 0; i < size; ++i) {
+  for (int i = 0; i < size; ++i)
     copy->enqueue(tracks[i]);
-  }
   copy->currentIndex = currentIndex;
   return copy;
 }
 
 void Playlist::reset() {
   currentIndex = 0;
-  for (int i = 0; i < size; ++i) {
+  for (int i = 0; i < size; ++i)
     if (tracks[i])
       tracks[i]->reset();
-  }
 }
 
 void Playlist::print(ostream &os) const {

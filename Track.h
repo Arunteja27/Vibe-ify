@@ -4,38 +4,27 @@
 #include "AudioNode.h"
 #include <string>
 
-using namespace std;
-
-// Concrete AudioNode representing a single audio track.
-// Owns raw PCM sample data loaded from a WAV file.
-// Demonstrates: dynamic memory (new[]/delete[]), raw pointers, references.
+// Concrete AudioNode — loads and plays a WAV file.
 class Track : public AudioNode {
 public:
-  // Construct from metadata only (no audio loaded yet)
-  Track(const string &title, const string &artist, const string &genre,
-        const string &filePath);
-
-  // Destructor — frees raw PCM data
+  Track(const std::string &title, const std::string &artist,
+        const std::string &genre, const std::string &filePath);
   ~Track();
 
-  // Load WAV file from disk, parse header, store samples as float*
-  bool loadFromFile(const string &path);
+  bool loadFromFile(const std::string &path);
 
-  // AudioNode interface
   int process(float *buffer, int numFrames) override;
   const char *getType() const override;
   AudioNode *clone() const override;
   void reset() override;
-  void print(ostream &os) const override;
+  void print(std::ostream &os) const override;
 
-  // Seek to a specific frame position
   void seek(int frame);
 
-  // Getters (return by const reference to avoid copies)
-  const string &getTitle() const;
-  const string &getArtist() const;
-  const string &getGenre() const;
-  const string &getFilePath() const;
+  const std::string &getTitle() const;
+  const std::string &getArtist() const;
+  const std::string &getGenre() const;
+  const std::string &getFilePath() const;
   int getTotalFrames() const;
   int getCursor() const;
   int getSampleRate() const;
@@ -43,18 +32,18 @@ public:
   bool isLoaded() const;
 
 private:
-  string title;
-  string artist;
-  string genre;
-  string filePath;
+  std::string title;
+  std::string artist;
+  std::string genre;
+  std::string filePath;
 
-  float *pcmData;   // Raw PCM sample buffer (interleaved)
-  int totalFrames;  // Total number of audio frames
-  int totalSamples; // totalFrames * channels
-  int cursor;       // Current playback position (frame index)
-  int sampleRate;   // e.g. 44100
-  int channels;     // 1 (mono) or 2 (stereo)
-  bool loaded;      // Whether audio data has been successfully loaded
+  float *pcmData;
+  int totalFrames;
+  int totalSamples;
+  int cursor;
+  int sampleRate;
+  int channels;
+  bool loaded;
 };
 
 #endif

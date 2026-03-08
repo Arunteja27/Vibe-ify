@@ -3,6 +3,7 @@
 #include <cstring>
 #include <fstream>
 
+using namespace std;
 
 Track::Track(const string &title, const string &artist, const string &genre,
              const string &filePath)
@@ -11,7 +12,6 @@ Track::Track(const string &title, const string &artist, const string &genre,
       sampleRate(44100), channels(2), loaded(false) {}
 
 Track::~Track() {
-  // Manual cleanup of raw PCM buffer
   if (pcmData) {
     delete[] pcmData;
     pcmData = nullptr;
@@ -19,7 +19,6 @@ Track::~Track() {
 }
 
 bool Track::loadFromFile(const string &path) {
-  // Free any previously loaded data
   if (pcmData) {
     delete[] pcmData;
     pcmData = nullptr;
@@ -32,11 +31,9 @@ bool Track::loadFromFile(const string &path) {
     return false;
   }
 
-  // ---- Parse WAV header ----
   char chunkId[4];
   file.read(chunkId, 4);
   if (memcmp(chunkId, "RIFF", 4) != 0) {
-    cerr << "Track::loadFromFile: not a valid WAV (missing RIFF)" << endl;
     file.close();
     return false;
   }
@@ -47,12 +44,10 @@ bool Track::loadFromFile(const string &path) {
   char format[4];
   file.read(format, 4);
   if (memcmp(format, "WAVE", 4) != 0) {
-    cerr << "Track::loadFromFile: not a valid WAV (missing WAVE)" << endl;
     file.close();
     return false;
   }
 
-  // Read subchunks until we find "fmt " and "data"
   short audioFormat = 0;
   short numChannels = 0;
   int sr = 0;
@@ -77,10 +72,8 @@ bool Track::loadFromFile(const string &path) {
       file.read(reinterpret_cast<char *>(&byteRate), 4);
       file.read(reinterpret_cast<char *>(&blockAlign), 2);
       file.read(reinterpret_cast<char *>(&bitsPerSample), 2);
-      // Skip any extra fmt bytes
-      if (subchunkSize > 16) {
+      if (subchunkSize > 16)
         file.seekg(subchunkSize - 16, ios::cur);
-      }
       foundFmt = true;
     } else if (memcmp(subchunkId, "data", 4) == 0) {
       dataSize = subchunkSize;
@@ -88,7 +81,6 @@ bool Track::loadFromFile(const string &path) {
       file.read(rawData, dataSize);
       foundData = true;
     } else {
-      // Skip unknown subchunk
       file.seekg(subchunkSize, ios::cur);
     }
   }
@@ -96,14 +88,11 @@ bool Track::loadFromFile(const string &path) {
   file.close();
 
   if (!foundFmt || !foundData || audioFormat != 1) {
-    // Only support uncompressed PCM (audioFormat == 1)
     if (rawData)
       delete[] rawData;
-    cerr << "Track::loadFromFile: unsupported WAV format" << endl;
     return false;
   }
 
-  // ---- Convert raw bytes to float* PCM ----
   channels = numChannels;
   sampleRate = sr;
   int bytesPerSample = bitsPerSample / 8;
@@ -114,19 +103,16 @@ bool Track::loadFromFile(const string &path) {
 
   if (bitsPerSample == 16) {
     short *samples16 = reinterpret_cast<short *>(rawData);
-    for (int i = 0; i < totalSamples; ++i) {
+    for (int i = 0; i < totalSamples; ++i)
       pcmData[i] = samples16[i] / 32768.0f;
-    }
   } else if (bitsPerSample == 8) {
     unsigned char *samples8 = reinterpret_cast<unsigned char *>(rawData);
-    for (int i = 0; i < totalSamples; ++i) {
+    for (int i = 0; i < totalSamples; ++i)
       pcmData[i] = (samples8[i] - 128) / 128.0f;
-    }
   } else if (bitsPerSample == 32) {
     int *samples32 = reinterpret_cast<int *>(rawData);
-    for (int i = 0; i < totalSamples; ++i) {
+    for (int i = 0; i < totalSamples; ++i)
       pcmData[i] = samples32[i] / 2147483648.0f;
-    }
   }
 
   delete[] rawData;
@@ -149,16 +135,13 @@ int Track::process(float *buffer, int numFrames) {
   int samplesToCopy = framesToCopy * channels;
   int srcOffset = cursor * channels;
 
-  // Direct pointer-based copy for minimal CPU overhead
   float *dst = buffer;
   float *src = pcmData + srcOffset;
-  for (int i = 0; i < samplesToCopy; ++i) {
+  for (int i = 0; i < samplesToCopy; ++i)
     dst[i] = src[i];
-  }
 
-  // If source is mono but output expects stereo, duplicate channel
+  // Mono to stereo duplication
   if (channels == 1) {
-    // Work backwards to avoid overwriting
     for (int f = framesToCopy - 1; f >= 0; --f) {
       buffer[f * 2 + 1] = buffer[f];
       buffer[f * 2] = buffer[f];
