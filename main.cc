@@ -9,6 +9,7 @@
 using namespace std;
 
 int main() {
+  SetConsoleOutputCP(65001);
   cout << "  Initializing Vibe-ify Music Engine..." << endl;
 
   _mkdir("media");

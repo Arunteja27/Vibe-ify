@@ -26,18 +26,29 @@ void PlaybackController::printBanner() const {
 }
 
 void PlaybackController::printHelp() const {
-  cout << "  Commands:" << endl;
-  cout << "    list                 - Show all tracks in library" << endl;
+  cout << "  Playback:" << endl;
+  cout << "    list                 - Show all tracks" << endl;
   cout << "    play <id>            - Play track by ID" << endl;
   cout << "    pause                - Pause playback" << endl;
   cout << "    resume               - Resume playback" << endl;
   cout << "    stop                 - Stop playback" << endl;
   cout << "    skip                 - Skip to next track" << endl;
   cout << "    prev                 - Go to previous track" << endl;
-  cout << "    queue <id>           - Add track to playlist queue" << endl;
-  cout << "    search <query>       - Search tracks by artist/title" << endl;
-  cout << "    volume <0-100>       - Set playback volume" << endl;
-  cout << "    now                  - Show now playing info" << endl;
+  cout << "    queue <id>           - Add track to queue" << endl;
+  cout << "    search <query>       - Search tracks" << endl;
+  cout << "    volume <0-100>       - Set volume" << endl;
+  cout << "    now                  - Now playing info" << endl;
+  cout << endl;
+  cout << "  Effects:" << endl;
+  cout << "    echo <0-100>         - Echo/delay" << endl;
+  cout << "    reverb <0-100>       - Reverb" << endl;
+  cout << "    bass <0-100>         - Bass boost" << endl;
+  cout << "    distort <0-100>      - Distortion" << endl;
+  cout << "    speed <25-400>       - Playback speed %" << endl;
+  cout << "    effects              - Show active effects" << endl;
+  cout << "    clear                - Reset all effects" << endl;
+  cout << endl;
+  cout << "  General:" << endl;
   cout << "    help                 - Show this help" << endl;
   cout << "    quit                 - Exit Vibe-ify" << endl;
   cout << endl;
@@ -130,6 +141,20 @@ void PlaybackController::run() {
       cmdVolume(args);
     } else if (cmd == "now" || cmd == "np") {
       cmdNowPlaying();
+    } else if (cmd == "echo") {
+      cmdEcho(args);
+    } else if (cmd == "reverb") {
+      cmdReverb(args);
+    } else if (cmd == "bass") {
+      cmdBass(args);
+    } else if (cmd == "distort" || cmd == "distortion") {
+      cmdDistort(args);
+    } else if (cmd == "speed") {
+      cmdSpeed(args);
+    } else if (cmd == "effects" || cmd == "fx") {
+      cmdEffects();
+    } else if (cmd == "clear") {
+      cmdClearEffects();
     } else {
       cout << "  Unknown command: '" << cmd << "'. Type 'help' for commands."
            << endl;
@@ -311,4 +336,95 @@ void PlaybackController::cmdNowPlaying() const {
     playlist->print(cout);
     cout << endl;
   }
+}
+
+void PlaybackController::cmdEcho(const string &args) {
+  if (args.empty()) {
+    cout << "  Echo: " << (int)(engine->getEcho() * 100) << "%" << endl;
+    return;
+  }
+  int val = atoi(args.c_str());
+  if (val < 0)
+    val = 0;
+  if (val > 100)
+    val = 100;
+  engine->setEcho(val / 100.0f);
+  cout << "  🔊 Echo: " << val << "%" << (val == 0 ? " (off)" : "") << endl;
+}
+
+void PlaybackController::cmdReverb(const string &args) {
+  if (args.empty()) {
+    cout << "  Reverb: " << (int)(engine->getReverb() * 100) << "%" << endl;
+    return;
+  }
+  int val = atoi(args.c_str());
+  if (val < 0)
+    val = 0;
+  if (val > 100)
+    val = 100;
+  engine->setReverb(val / 100.0f);
+  cout << "  🔊 Reverb: " << val << "%" << (val == 0 ? " (off)" : "") << endl;
+}
+
+void PlaybackController::cmdBass(const string &args) {
+  if (args.empty()) {
+    cout << "  Bass Boost: " << (int)(engine->getBassBoost() * 100) << "%"
+         << endl;
+    return;
+  }
+  int val = atoi(args.c_str());
+  if (val < 0)
+    val = 0;
+  if (val > 100)
+    val = 100;
+  engine->setBassBoost(val / 100.0f);
+  cout << "  🔊 Bass Boost: " << val << "%" << (val == 0 ? " (off)" : "")
+       << endl;
+}
+
+void PlaybackController::cmdDistort(const string &args) {
+  if (args.empty()) {
+    cout << "  Distortion: " << (int)(engine->getDistortion() * 100) << "%"
+         << endl;
+    return;
+  }
+  int val = atoi(args.c_str());
+  if (val < 0)
+    val = 0;
+  if (val > 100)
+    val = 100;
+  engine->setDistortion(val / 100.0f);
+  cout << "  🔊 Distortion: " << val << "%" << (val == 0 ? " (off)" : "")
+       << endl;
+}
+
+void PlaybackController::cmdSpeed(const string &args) {
+  if (args.empty()) {
+    cout << "  Speed: " << (int)(engine->getSpeed() * 100) << "%" << endl;
+    return;
+  }
+  int val = atoi(args.c_str());
+  if (val < 25)
+    val = 25;
+  if (val > 400)
+    val = 400;
+  engine->setSpeed(val / 100.0f);
+  cout << "  🔊 Speed: " << val << "%" << endl;
+}
+
+void PlaybackController::cmdEffects() const {
+  cout << "  Active Effects:" << endl;
+  cout << "    Echo:       " << (int)(engine->getEcho() * 100) << "%" << endl;
+  cout << "    Reverb:     " << (int)(engine->getReverb() * 100) << "%" << endl;
+  cout << "    Bass Boost: " << (int)(engine->getBassBoost() * 100) << "%"
+       << endl;
+  cout << "    Distortion: " << (int)(engine->getDistortion() * 100) << "%"
+       << endl;
+  cout << "    Speed:      " << (int)(engine->getSpeed() * 100) << "%" << endl;
+  cout << "    Volume:     " << (int)(engine->getVolume() * 100) << "%" << endl;
+}
+
+void PlaybackController::cmdClearEffects() {
+  engine->clearEffects();
+  cout << "  All effects cleared." << endl;
 }
