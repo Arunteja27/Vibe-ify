@@ -1,6 +1,12 @@
 # 🎵 Vibe-ify
 
-A low-latency C++ music engine with real-time DSP effects, FFT spectrum analysis, YouTube integration, and a REST API — all built from scratch with raw pointers, manual memory management, and zero external libraries.
+A low-latency C++ music engine with real-time DSP effects, FFT spectrum analysis, YouTube integration, and a REST API. All built from scratch with raw pointers, manual memory management, and zero external libraries.
+
+See demo of the engine features served via the REST API, showcased on a simple `testUI.html` file (UNMUTE video below!). 
+
+https://github.com/user-attachments/assets/f96565d5-ffeb-4c73-bea1-63628c55396b
+
+
 
 ## Features
 
@@ -24,7 +30,7 @@ Effects are applied in a dynamic chain: **Source → Speed → Bass → Echo →
 - Real-time analysis on every audio buffer
 - ASCII visualizer in CLI, JSON array via API
 
-### 🔍 YouTube Integration
+### ▶️ YouTube Integration
 Search and play music from YouTube directly:
 - Powered by `yt-dlp` + `ffmpeg` (auto-detected at startup)
 - Downloads as 44.1kHz stereo 16-bit WAV

@@ -2,7 +2,6 @@
 #include "AudioEngine.h"
 #include "HttpServer.h"
 #include "PlaybackController.h"
-#include "StreamCache.h"
 #include "TrackLibrary.h"
 #include "YouTubeSource.h"
 #include <cstdlib>
@@ -18,7 +17,6 @@ int main() {
 
   _mkdir("media");
   _mkdir("media/samples");
-  _mkdir("media/cache");
 
   TrackLibrary *library = new TrackLibrary();
   int loaded = library->loadFromDirectory("media/samples");
@@ -37,9 +35,8 @@ int main() {
   }
 
   YouTubeSource *youtube = new YouTubeSource();
-  StreamCache *cache = new StreamCache();
 
-  ApiController *apiCtrl = new ApiController(library, engine, youtube, cache);
+  ApiController *apiCtrl = new ApiController(library, engine, youtube);
   HttpServer *httpServer = new HttpServer(8080);
   httpServer->start(apiCtrl);
 
@@ -51,7 +48,6 @@ int main() {
   delete apiCtrl;
   delete cli;
   delete youtube;
-  delete cache;
   engine->shutdown();
   delete engine;
   delete library;

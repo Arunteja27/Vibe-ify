@@ -7,8 +7,8 @@
 using namespace std;
 
 ApiController::ApiController(TrackLibrary *library, AudioEngine *engine,
-                             YouTubeSource *youtube, StreamCache *cache)
-    : library(library), engine(engine), youtube(youtube), cache(cache),
+                             YouTubeSource *youtube)
+    : library(library), engine(engine), youtube(youtube),
       currentApiTrack(nullptr), lastResultCount(0) {}
 
 ApiController::~ApiController() {}
@@ -338,32 +338,23 @@ string ApiController::postYtPlay(const string &body) {
 
   YouTubeResult &result = lastResults[idx];
 
-  string cachedPath = cache->getCachedPath(result.videoId);
-  if (cachedPath.empty()) {
-    string outputPath = cache->store(result.videoId);
-    if (!youtube->download(result.url, outputPath))
-      return "{\"error\": \"download failed\"}";
-    cachedPath = outputPath;
-  }
-
   string artist, title;
   YouTubeSource::parseTitle(result.title, artist, title);
 
-  Track *track = new Track(title, artist, "YouTube", cachedPath);
+  string samplePath = "media/samples/" + artist + " - " + title + ".wav";
+
+  ifstream checkFile(samplePath);
+  if (!checkFile.good()) {
+    if (!youtube->download(result.url, samplePath))
+      return "{\"error\": \"download failed\"}";
+  }
+
+  Track *track = new Track(title, artist, "YouTube", samplePath);
   if (!track->isLoaded()) {
-    if (!track->loadFromFile(cachedPath)) {
+    if (!track->loadFromFile(samplePath)) {
       delete track;
       return "{\"error\": \"failed to load audio\"}";
     }
-  }
-
-  string samplePath = "media/samples/" + artist + " - " + title + ".wav";
-  ifstream checkSample(samplePath);
-  if (!checkSample.good()) {
-    ifstream src(cachedPath, ios::binary);
-    ofstream dst(samplePath, ios::binary);
-    if (src.good() && dst.good())
-      dst << src.rdbuf();
   }
 
   library->addTrack(track);
