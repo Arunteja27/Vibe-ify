@@ -42,6 +42,7 @@ private:
   void cmdSpeed(const std::string &args);
   void cmdEffects() const;
   void cmdClearEffects();
+  void cmdSpectrum() const;
 };
 
 #endif

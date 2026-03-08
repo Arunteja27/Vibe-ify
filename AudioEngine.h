@@ -9,6 +9,7 @@
 #include "AudioBuffer.h"
 #include "AudioEffect.h"
 #include "AudioNode.h"
+#include "SpectrumAnalyzer.h"
 
 // Effect slot indices
 enum EffectSlot {
@@ -59,6 +60,8 @@ public:
   void renderBlock();
   const float *getLastBuffer() const;
   int getBufferFrames() const;
+  const float *getSpectrumBands() const;
+  int getSpectrumNumBands() const;
 
   static void CALLBACK waveOutCallback(HWAVEOUT hwo, UINT uMsg,
                                        DWORD_PTR dwInstance, DWORD_PTR dwParam1,
@@ -90,6 +93,8 @@ private:
   bool playing;
   bool paused;
   float volume;
+
+  SpectrumAnalyzer *spectrum;
 
   void rebuildEffectChain();
   void cleanupEffectChain();

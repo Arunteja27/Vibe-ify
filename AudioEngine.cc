@@ -14,6 +14,7 @@ AudioEngine::AudioEngine()
   outputBuffers[1] = nullptr;
   renderBuffers[0] = nullptr;
   renderBuffers[1] = nullptr;
+  spectrum = new SpectrumAnalyzer(1024, 64);
   memset(&waveFormat, 0, sizeof(WAVEFORMATEX));
   memset(waveHeaders, 0, sizeof(waveHeaders));
 }
@@ -78,6 +79,10 @@ void AudioEngine::shutdown() {
   waveOutClose(hWaveOut);
   hWaveOut = nullptr;
   initialized = false;
+  if (spectrum) {
+    delete spectrum;
+    spectrum = nullptr;
+  }
 }
 
 void AudioEngine::cleanupEffectChain() {
@@ -265,6 +270,18 @@ const float *AudioEngine::getLastBuffer() const {
   return nullptr;
 }
 
+const float *AudioEngine::getSpectrumBands() const {
+  if (spectrum)
+    return spectrum->getBands();
+  return nullptr;
+}
+
+int AudioEngine::getSpectrumNumBands() const {
+  if (spectrum)
+    return spectrum->getNumBands();
+  return 0;
+}
+
 void AudioEngine::prepareBuffer(int bufferIndex) {
   AudioBuffer *renderBuf = renderBuffers[bufferIndex];
   renderBuf->clear();
@@ -277,6 +294,11 @@ void AudioEngine::prepareBuffer(int bufferIndex) {
     playing = false;
 
   renderBuf->clamp();
+
+  // Run FFT on the rendered audio for spectrum visualization
+  if (spectrum && framesRead > 0)
+    spectrum->analyze(renderBuf->raw(), framesRead);
+
   convertFloatToInt16(renderBuf->raw(), outputBuffers[bufferIndex],
                       bufferFrames * numChannels);
 }
