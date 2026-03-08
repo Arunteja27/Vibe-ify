@@ -1,31 +1,36 @@
-objects = main.o View.o Controller.o Songify.o MediaFactory.o Criteria.o Album.o Song.o 
+CXX      = g++
+CXXFLAGS = -std=c++17 -O2 -Wall
+LDFLAGS  = -lwinmm
 
-a4: $(objects)
-	g++ -o a4 $(objects)
+TARGET   = vibeify
 
-main.o: main.cc
-	g++ -c main.cc 
+OBJECTS  = main.o Track.o Playlist.o TrackLibrary.o AudioEngine.o AudioEffect.o PlaybackController.o
 
-View.o: View.h View.cc 
-	g++ -c View.cc
+$(TARGET): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJECTS) $(LDFLAGS)
 
-Controller.o: Controller.h Controller.cc 
-	g++ -c Controller.cc
+main.o: main.cc TrackLibrary.h AudioEngine.h PlaybackController.h WavGenerator.h
+	$(CXX) $(CXXFLAGS) -c main.cc
 
-Songify.o: Songify.h Songify.cc
-	g++ -c Songify.cc
+Track.o: Track.cc Track.h AudioNode.h
+	$(CXX) $(CXXFLAGS) -c Track.cc
 
-MediaFactory.o: MediaFactory.h MediaFactory.cc
-	g++ -c MediaFactory.cc
+Playlist.o: Playlist.cc Playlist.h AudioNode.h Track.h
+	$(CXX) $(CXXFLAGS) -c Playlist.cc
 
-Criteria.o: Criteria.cc Criteria.h
-	g++ -c Criteria.cc
+TrackLibrary.o: TrackLibrary.cc TrackLibrary.h Track.h
+	$(CXX) $(CXXFLAGS) -c TrackLibrary.cc
 
-Album.o: Album.cc Album.h
-	g++ -c Album.cc
-	
-Song.o: Song.cc Song.h 
-	g++ -c Song.cc
+AudioEngine.o: AudioEngine.cc AudioEngine.h AudioNode.h AudioBuffer.h AudioEffect.h
+	$(CXX) $(CXXFLAGS) -c AudioEngine.cc
+
+AudioEffect.o: AudioEffect.cc AudioEffect.h AudioNode.h
+	$(CXX) $(CXXFLAGS) -c AudioEffect.cc
+
+PlaybackController.o: PlaybackController.cc PlaybackController.h TrackLibrary.h Playlist.h AudioEngine.h
+	$(CXX) $(CXXFLAGS) -c PlaybackController.cc
 
 clean:
-	rm -f a4 *.o	
+	rm -f $(TARGET) *.o
+
+.PHONY: clean
